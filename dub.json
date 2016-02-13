@@ -1,0 +1,12 @@
+{
+    "name": "noyorin",
+    "description": "Twitter bot",
+    "copyright": "Copyright © 2016, k3kaimu",
+    "authors": ["k3kaimu"],
+
+    "dependencies":{
+        "msgpack-d": "~>1.0.0-beta.2",
+        "carbon": {"path": "../carbon"},
+        "graphite": {"path": "../graphite"}
+    }
+}
