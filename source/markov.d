@@ -94,7 +94,10 @@ final class Markov(S, size_t N)
 
     size_t learnedCount() const @property pure nothrow
     {
-        return _knowledge[START_KEY].totalCount;
+        if(auto p = START_KEY in _knowledge)
+            return (*p).totalCount;
+        else
+            return 0;
     }
 
 

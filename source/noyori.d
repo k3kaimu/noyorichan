@@ -30,12 +30,15 @@ final synchronized class Noyori
 
     string generate()
     {
+        if(this.keyCount == 0)
+            return "学習したみしかない";
+
         string t;
 
         if(dice(0.3, 0.7) == 0)
             t = _markov2.generate();
         else{
-            size_t size = dice(0.1, 0.1, 0.2, 0.2, 0.3, 0.1) * 10;
+            size_t size = dice(0.5, 0.3, 0.2) * 10 + dice(0.2, 0.8);
             while(t.walkLength < size)
                 t = _markov3.generate();
         }

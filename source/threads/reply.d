@@ -35,7 +35,11 @@ struct ReplyThread
         _noyori = noyori;
         _twitter = Twitter(twToken);
         _endFlag = endFlag;
-        _myId = parseJSON(settingJSON)["account"]["id"].str;
+
+        auto json = parseJSON(settingJSON)["account"];
+        _myId = json["id"].str;
+        foreach(e; json["names"].array)
+            _myNames ~= e.str;
     }
 
 
@@ -45,6 +49,20 @@ struct ReplyThread
     @ThreadEvent
     void onReceiveTweet(string tweetJSON)
     {
+        void reply(JSONValue json, string msg)
+        {
+            _twitter.callAPI!"statuses.update"([
+                "status": format("@%s %s", json["user"]["screen_name"].str, msg),
+                "in_reply_to_status_id": json["id"].to!string
+            ]);
+        }
+
+        void replyforCallMe(JSONValue json, string str)
+        {
+            reply(json, format("%s　%s", "呼んだ？", str));
+        }
+
+
         JSONValue json;
 
         try json = toJSONValue(tweetJSON);
@@ -52,25 +70,28 @@ struct ReplyThread
 
         if(json.type != JSON_TYPE.OBJECT || "text" !in json.object) return;
 
+
         string text = json["text"].str;
         if(json["user"]["screen_name"].str == _myId || text.startsWith("RT")) return;
         if(text.canFind("@" ~ _myId)){
             if(text.canFind("おみくじ")){
-                _twitter.callAPI!"statuses.update"([
-                    "status": format("@%s %s", json["user"]["screen_name"].str, Omikuji.omikuji()),
-                    "in_reply_to_status_id": json["id"].to!string
+                reply(json, Omikuji.omikuji());
+            }else if(text.canFind("フォロー") || text.canFind("ふぉろー")){
+                scope(success) reply(json, "フォローしたよ");
+                scope(failure) reply(json, "フォローミスった");
+
+                _twitter.post("https://api.twitter.com/1.1/friendships/create.json", [
+                    "screen_name": json["user"]["screen_name"].str,
+                    "follow": "false"
                 ]);
             }else{
-                _twitter.callAPI!"statuses.update"([
-                    "status": format("@%s %s", json["user"]["screen_name"].str, _noyori.generate),
-                    "in_reply_to_status_id": json["id"].to!string
-                ]);
+                reply(json, _noyori.generate);
             }
-        }else if(text.canFind("ツタンカーメン") || text.canFind("ﾂﾀﾝｶｰﾒﾝ") || text.canFind("つたんかーめん")){
-            _twitter.callAPI!"statuses.update"([
-                "status": uniform01() < 0.1 ? "呼んだ？" : format("@%s %s", json["user"]["screen_name"].str, "呼んだ？"),
-                "in_reply_to_status_id": json["id"].to!string
-            ]);
+        }else if(reduce!((a, b) => a || text.canFind(b))(false, _myNames)){
+            replyforCallMe(json, _noyori.generate());
+        }else if(text.canFind("ひばり") || text.canFind("ひばカス")){
+            if(uniform01() < 0.1)
+                replyforCallMe(json, _noyori.generate());
         }
     }
 
@@ -91,6 +112,7 @@ struct ReplyThread
     Twitter _twitter;
     shared(bool)* _endFlag;
     string _myId;
+    string[] _myNames;
 
 
     // http://qiita.com/mono_shoo/items/47ae6011faed6ee78334

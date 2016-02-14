@@ -48,7 +48,11 @@ void main(string[] args)
 
     // のよりちゃんの復元
     shared(Noyori) noyori;
-    unpack(cast(ubyte[])std.file.read("noyori.dat"), noyori);
+
+    if(exists("noyori.dat"))
+        unpack(cast(ubyte[])std.file.read("noyori.dat"), noyori);
+    else
+        noyori = new shared Noyori();
 
 
     // 全スレッドを停止させるための停止フラグ
