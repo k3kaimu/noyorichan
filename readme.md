@@ -1,6 +1,6 @@
 # のよりちゃん
 
-![のよりちゃん](noyori-svg.svg)
+<img src="https://raw.githubusercontent.com/k3kaimu/noyorichan/master/noyori-png.png" width=300px/>
 
 [ひばりちゃん](https://github.com/tut-cc/hibarichan)にインスパイアされた感じのTwitterマルコフ連鎖botです．
 ひばりちゃんと異なる点として，直前3単語を利用して次の1単語をランダムに決定しているため，文法的に自然な文章になりやすいという特徴があります．
